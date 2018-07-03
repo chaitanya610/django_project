@@ -1,0 +1,67 @@
+{% extends 'rango/base.html' %}
+{% load static %}
+{% block title_block %}
+    {{ category.name }}
+{% endblock %}
+
+{% block body_block %}
+{% if user.is_authenticated %}
+    <div class="hero-unit">
+    <h1>Search with Rango</h1>
+    <br/>
+    <div class="container-fluid">
+        <form class="form-signin span8" id="user_form" method="post" action="{% url 'show_category' category.slug %}">
+        {% csrf_token %}
+        <!-- Display the search form elements here -->
+        <input type="text" size="50" name="query" value="{% if query %} {{ query }} {% endif %}" id="query" />
+        <input class="btn btn-primary" type="submit" name="submit" value="Search"/>
+        <br />
+        </form>
+        <br>
+    {% if result_list %}
+    <!-- Display search results in an ordered list -->
+    <div style="clear: both;">
+        <ul class="list-group">
+            <!-- {{result_list}} -->
+        {% for p in result_list.webPages.value  %}
+            <li id="seach_pages" class="list-group-item">
+                <a href="{{p.url}}" target="_blank">{{p.name | safe}}</a>&nbsp;
+                <button class="btn btn-primary add_page" data-catid="{{category.id}}" page_name ="{{ p.name }}" page_url = "{{ p.url }}" type="submit">Add</button>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    </div>
+</div>
+{% endif %}
+<br><br>
+{% if category %}
+        <h1>{{ category.name }}</h1>
+        {% if pages %}
+            <ul>
+                {% for page in pages %}
+                    <li><a href="{% url 'goto' %}?page_id={{page.id}}">{{ page.title }}</a></li>
+                    {% if page.views != 1 %}
+                        ({{ page.views }} views)
+                    {% elif page.views == 1 %}
+                        ({{ page.views }} view)
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <strong>No pages currently in category.</strong>
+        {% endif %}
+{% else %}
+    The specified category does not exist!
+{% endif %}
+<p> <strong id="like_count">{{ category.likes }}</strong> people like this category
+    &nbsp;
+    {% if user.is_authenticated %}
+        <button id="likes" data-catid="{{category.id}}" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-thumbs-up"></span> Like </button>
+    {% endif %}
+</p>
+{% if user.is_authenticated %}
+    <a href = "{% url 'add_page' category.slug %}">Add Page</a><br/>
+{% endif %}
+{% endblock %}
